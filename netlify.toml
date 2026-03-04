@@ -22,7 +22,7 @@
     Vary = "Accept-Language"
     Content-Security-Policy = """
       default-src 'self';
-      script-src 'self';
+      script-src 'self' https://static.cloudflareinsights.com;;
       style-src 'self' 'unsafe-inline';
       font-src 'self' data:;
       img-src 'self' data: https:;
