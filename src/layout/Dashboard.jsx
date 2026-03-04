@@ -6,6 +6,10 @@ import UtahNewsDispatch from "../components/UtahNewsDispatch.jsx";
 import OremAlerts from "../components/OremAlerts.jsx";
 import OremWeather from "../components/OremWeather.jsx";
 import TemperatureChart from "../components/TemperatureChart.jsx";
+import StreamQR from "../components/StreamQR.jsx";
+
+const path = window.location.pathname;
+const isStream = path === "/stream";
 
 // Default module registry
 const modules = [
@@ -50,6 +54,7 @@ export default function Dashboard() {
           .map(({ id, component: Component, props }) => (
             <Component key={id} order={id} id={id} {...props} />
           ))}
+        {isStream && <StreamQR />}
       </Masonry>
     </Container>
   );
