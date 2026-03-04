@@ -47,7 +47,7 @@ const modules = [
 
 export default function Dashboard() {
   return (
-    <Container sx={{ pt: 2 }} maxWidth="xl">
+    <Container sx={{ pt: 2 }} maxWidth="xl" component="main">
       <Masonry columns={{ xs: 1, sm: 2, md: 3 }} spacing={2}>
         {modules
           // eslint-disable-next-line no-unused-vars
