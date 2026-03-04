@@ -4,10 +4,13 @@ import { QRCodeSVG } from "qrcode.react";
 
 export default function StreamQR() {
   return (
-    <Card elevation={1} sx={{ textAlign: "center" }}>
-      <CardContent>
-        <QRCodeSVG value="https://orem.pinyon.dev" />
-      </CardContent>
-    </Card>
+    <>
+      <meta name="robots" content="noindex, nofollow" />
+      <Card elevation={1} sx={{ textAlign: "center" }}>
+        <CardContent>
+          <QRCodeSVG value="https://orem.pinyon.dev" />
+        </CardContent>
+      </Card>
+    </>
   );
 }
