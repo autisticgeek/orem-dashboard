@@ -62,7 +62,7 @@ export default function OremAlerts() {
         };
       });
 
-      setItems(entries.slice(0, 10));
+      setItems(entries.slice(0, 4));
     }
 
     loadFeed();
