@@ -1,6 +1,7 @@
 // src/App.jsx
 import { ThemeProvider, createTheme, CssBaseline } from "@mui/material";
 import Dashboard from "./layout/Dashboard.jsx";
+const isDev = import.meta.env.DEV;
 
 const theme = createTheme({
   palette: {
@@ -10,9 +11,12 @@ const theme = createTheme({
 
 export default function App() {
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <Dashboard />
-    </ThemeProvider>
+    <>
+      {isDev && <title>Orem Dev</title>}
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <Dashboard />
+      </ThemeProvider>
+    </>
   );
 }

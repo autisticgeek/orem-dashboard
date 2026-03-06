@@ -59,8 +59,8 @@ export default function TemperatureChart({ lat = 40.30592, lon = -111.70692, hou
   if (!tempsF.length) return null;
 
   const xValues = hours.map((_, i) => i);
-  const yMin = Math.min(...tempsF) - 1;
-  const yMax = Math.max(...tempsF) + 1;
+  const yMin = Math.min(...tempsF) - 0.5;
+  const yMax = Math.max(...tempsF) + 0.5;
 
   return (
     <Card elevation={1}>
