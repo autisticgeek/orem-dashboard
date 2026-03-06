@@ -110,7 +110,7 @@ export default function UvuScheduleCard() {
     return (
       <ListItem disableGutters>
         <ListItemText
-          primary={g.summary}
+          primary={g.summary.slice(23, g.summary.length)}
           secondary={`${dateStr} • ${g.location} • ${g.time}`}
           slotProps={{
             primary: { variant: "body1" },
