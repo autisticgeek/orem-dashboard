@@ -20,8 +20,22 @@ export default function TemperatureChart({
         const res = await fetch(url);
 
         const data = await res.json();
-        const times = data.hourly.time.slice(0, hoursToShow);
-        const tempsC = data.hourly.temperature_2m.slice(0, hoursToShow);
+
+        const now = new Date();
+
+        const startIndex = data.hourly.time.findIndex((t) => {
+          const d = new Date(t);
+          return d >= now;
+        });
+
+        const times = data.hourly.time.slice(
+          startIndex,
+          startIndex + hoursToShow
+        );
+        const tempsC = data.hourly.temperature_2m.slice(
+          startIndex,
+          startIndex + hoursToShow
+        );
 
         const hourLabels = times.map((t) =>
           new Date(t).toLocaleTimeString([], {
@@ -54,7 +68,7 @@ export default function TemperatureChart({
 
   return (
     <Card elevation={1}>
-      <CardContent >
+      <CardContent>
         <LineChart
           height={250}
           grid={{ vertical: true, horizontal: true }}
