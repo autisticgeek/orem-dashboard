@@ -1,6 +1,7 @@
 [build]
   publish = "dist"
 
+
 # React Router rewrite rule (SPA)
 [[redirects]]
   from = "/*"
@@ -20,16 +21,20 @@
     Permissions-Policy = "fullscreen=(self), camera=(), geolocation=(), microphone=()"
     Vary = "Accept-Language"
     Content-Security-Policy = """
-      default-src 'self';
-      script-src 'self' https://static.cloudflareinsights.com;;
-      style-src 'self' 'unsafe-inline';
-      font-src 'self' data:;
-      img-src 'self' data: https:;
-      connect-src 'self' https://cdn.jsdelivr.net;
-      media-src 'self' https://cdn.jsdelivr.net;
-      object-src 'none';
-      base-uri 'self';
-      form-action 'self';
-      frame-ancestors 'none';
-      upgrade-insecure-requests;
-    """
+  default-src 'self';
+  script-src 'self' https://static.cloudflareinsights.com;;
+  style-src 'self' 'unsafe-inline';
+  font-src 'self' data:;
+  img-src 'self' data: https:;
+  connect-src 'self' https://cdn.jsdelivr.net;
+  media-src 'self' https://cdn.jsdelivr.net;
+  object-src 'none';
+  base-uri 'self';
+  form-action 'self';
+  frame-ancestors 'none';
+  upgrade-insecure-requests;
+"""
+
+
+
+
