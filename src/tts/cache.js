@@ -1,4 +1,4 @@
-// cache.js
+// src/tts/cache.js
 const DB_NAME = "tts-cache";
 const STORE_NAME = "audio";
 const DB_VERSION = 1;

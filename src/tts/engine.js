@@ -1,25 +1,27 @@
 // src/tts/engine.js
-import * as ort from "onnxruntime-web";
-import * as tts from "@diffusionstudio/vits-web";
 import { getCachedAudio, storeCachedAudio } from "./cache.js";
-
-// -----------------------------
-// Configure ONNX Runtime Web
-// -----------------------------
-if (crossOriginIsolated) {
-  ort.env.wasm.numThreads = navigator.hardwareConcurrency || 8;
-  ort.env.wasm.simd = true;
-  console.log("ONNX Runtime: multi-threaded mode enabled");
-} else {
-  ort.env.wasm.numThreads = 1;
-  ort.env.wasm.simd = false;
-  console.log("ONNX Runtime: single-thread mode (dev)");
-}
 
 // -----------------------------
 // Prefetch buffer
 // -----------------------------
 let nextAudioBlob = null;
+
+// -----------------------------
+// Fetch WAV from Piper server
+// -----------------------------
+async function fetchFromPiper(text) {
+  const response = await fetch("https://tts.pinyon.dev/create", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Piper server error: ${response.status}`);
+  }
+
+  return await response.blob();
+}
 
 // -----------------------------
 // Prefetch next paragraph
@@ -36,12 +38,9 @@ async function prefetchParagraph(articleId, paragraphIndex, text) {
     return;
   }
 
-  // 2. Generate
+  // 2. Generate via Piper
   console.log(`🟧 [PREFETCH MISS] Generating audio for key: ${key}`);
-  const wav = await tts.predict({
-    text,
-    voiceId: "en_US-hfc_female-medium",
-  });
+  const wav = await fetchFromPiper(text);
 
   console.log(`🟧 [PREFETCH GENERATED] Blob size: ${wav.size}`);
   await storeCachedAudio(key, wav);
@@ -64,10 +63,7 @@ export async function speakParagraph(articleId, paragraphIndex, text, nextText =
     console.log(`✅ [CACHE HIT] Found audio for key: ${key}`);
   } else {
     console.log(`❌ [CACHE MISS] Generating audio for key: ${key}`);
-    blob = await tts.predict({
-      text,
-      voiceId: "en_US-hfc_female-medium",
-    });
+    blob = await fetchFromPiper(text);
 
     console.log(`🎧 [TTS] Generated WAV blob: type=${blob.type}, size=${blob.size}`);
     await storeCachedAudio(key, blob);
