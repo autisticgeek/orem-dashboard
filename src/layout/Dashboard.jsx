@@ -1,4 +1,4 @@
-import { Container } from "@mui/material";
+import { Box, Container } from "@mui/material";
 import Masonry from "@mui/lab/Masonry";
 import ByuScheduleCard from "../components/ByuScheduleCard.jsx";
 import UvuScheduleCard from "../components/UvuScheduleCard.jsx";
@@ -47,8 +47,8 @@ const modules = [
 
 export default function Dashboard() {
   return (
-    <Container sx={{ pt: 2 }} maxWidth="xl" component="main">
-      <Masonry columns={{ xs: 1, sm: 2, md: 3 }} spacing={2}>
+    <Box sx={{ p: 2, display: "flex", alignItems: "center" }} component="main">
+      <Masonry columns={{ xs: 1, sm: 2, md: 3, xxl: 5 }} spacing={2}>
         {modules
           // eslint-disable-next-line no-unused-vars
           .map(({ id, component: Component, props }) => (
@@ -56,6 +56,6 @@ export default function Dashboard() {
           ))}
         {isStream && <StreamQR />}
       </Masonry>
-    </Container>
+    </Box>
   );
 }

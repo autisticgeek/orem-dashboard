@@ -128,7 +128,15 @@ export default function ByuScheduleCard() {
         sx={{ pb: 0, textAlign: "center" }}
       />
       <CardContent sx={{ pt: 0, display: "flex", justifyContent: "center" }}>
-        <List dense>
+        <List
+          dense
+          sx={{
+            display: "grid",
+            gridTemplateColumns: "repeat(2, 1fr)",
+            rowGap: 1,
+            columnGap: 2,
+          }}
+        >
           {games.length
             ? games.map((g, i) => <Fragment key={i}>{formatGame(g)}</Fragment>)
             : "No upcoming games in the next 7 days"}

@@ -41,7 +41,7 @@ export default function UvuScheduleCard() {
         const comp = new ICAL.Component(jcal);
         const vevents = comp.getAllSubcomponents("vevent");
 
-        const next3Days = getNextNDates(3);
+        const nextDays = getNextNDates(2);
 
         const events = vevents
           .map((event) => {
@@ -63,7 +63,7 @@ export default function UvuScheduleCard() {
               location: e.location || "TBD",
             };
           })
-          .filter((ev) => next3Days.some((d) => isSameDay(ev.date, d)))
+          .filter((ev) => nextDays.some((d) => isSameDay(ev.date, d)))
           .sort((a, b) => Temporal.PlainDate.compare(a.date, b.date));
 
         setGames(events);
@@ -108,7 +108,7 @@ export default function UvuScheduleCard() {
     });
 
     return (
-      <ListItem disableGutters>
+      <ListItem disableGutters alignItems="flex-start">
         <ListItemText
           primary={g.summary.slice(23, g.summary.length)}
           secondary={`${dateStr} • ${g.location} • ${g.time}`}
@@ -128,7 +128,15 @@ export default function UvuScheduleCard() {
         sx={{ pb: 0, textAlign: "center" }}
       />
       <CardContent sx={{ pt: 0, display: "flex", justifyContent: "center" }}>
-        <List dense>
+        <List
+          dense
+          sx={{
+            display: "grid",
+            gridTemplateColumns: "repeat(2, 1fr)",
+            rowGap: 1,
+            columnGap: 2,
+          }}
+        >
           {games.length
             ? games.map((g, i) => <Fragment key={i}>{formatGame(g)}</Fragment>)
             : "No upcoming games in the next 7 days"}
