@@ -14,7 +14,7 @@ import {
 import { Temporal } from "@js-temporal/polyfill";
 import { QRCodeSVG } from "qrcode.react";
 
-import { speakParagraph } from "../tts/engine";
+import { speakParagraph } from "../tts/engine.js";
 
 // Detect stream mode
 const path = window.location.pathname;
@@ -42,23 +42,28 @@ function toLocalDate(pubDate) {
   }
 }
 
-// Normalize text for TTS
+// -----------------------------
+// Text Normalization
+// -----------------------------
 function normalizeParagraph(text) {
-  if (typeof text !== "string") {
-    console.warn("normalizeParagraph received NON-STRING:", text);
-    return "";
-  }
+  if (typeof text !== "string") return "";
 
   return (
     text
-      .replace(/\s+/g, " ") // collapse whitespace
+      .replace(/\s+/g, " ")
 
       // Political prefixes
       .replace(/\bR[-–—]\s*/g, "Republican ")
       .replace(/\bD[-–—]\s*/g, "Democrat ")
 
-      // Gov. → Governor
+      // Governor forms
       .replace(/\bGov\.\s*/gi, "Governor ")
+      .replace(/\bGov\s+/gi, "Governor ")
+      .replace(/\bGov\.-elect\b/gi, "Governor-elect")
+      .replace(/\bLt\. Gov\.\s*/gi, "Lieutenant Governor ")
+      .replace(/\bLt\. Gov\s+/gi, "Lieutenant Governor ")
+      .replace(/\bLt Gov\.\s*/gi, "Lieutenant Governor ")
+      .replace(/\bLt Gov\s+/gi, "Lieutenant Governor ")
 
       // Places
       .replace(/\bSt\. George\b/gi, "Saint George")
@@ -82,31 +87,34 @@ function normalizeParagraph(text) {
   );
 }
 
-// Extract REAL paragraphs from HTML
+// -----------------------------
+// HTML → Paragraph Extraction
+// (Safe for COEP / CSP)
+// -----------------------------
 function cleanArticle(html) {
+  if (!html) return [];
+
+  // PREVENT images from loading before DOM parse
+  html = html
+    .replace(/<img[^>]*>/gi, "")
+    .replace(/<figure[\s\S]*?<\/figure>/gi, "");
+
   const div = document.createElement("div");
   div.innerHTML = html;
 
   // Remove junk elements
   div
     .querySelectorAll(
-      "figure, img, figcaption, iframe, script, style, noscript, blockquote, aside"
+      "iframe, script, style, noscript, blockquote, aside, figcaption"
     )
     .forEach((el) => el.remove());
 
-  div
-    .querySelectorAll("div.wp-block-embed, div.wp-block-image")
-    .forEach((el) => el.remove());
-
-  // Extract REAL paragraphs
   const paragraphs = [];
 
   div.querySelectorAll("p").forEach((p) => {
     const text = p.textContent.trim();
-
     if (!text) return;
     if (/^(SUPPORT|SUBSCRIBE|DONATE|READ MORE|CLICK HERE)/i.test(text)) return;
-
     paragraphs.push(text);
   });
 
@@ -130,7 +138,6 @@ export default function UtahNewsDispatch() {
   const readingRef = useRef(false);
   const itemsRef = useRef([]);
 
-  // Keep latest items for async reading
   useEffect(() => {
     itemsRef.current = items;
   }, [items]);
@@ -176,17 +183,17 @@ export default function UtahNewsDispatch() {
   // -----------------------------
   // Unified speak() wrapper
   // -----------------------------
-  async function speakParagraphWithCache(articleId, paragraphIndex, text) {
+  async function speakParagraphWithCache(articleId, paragraphIndex, text, nextText) {
     const normalized = normalizeParagraph(text);
-
     if (!normalized) return 0;
 
     if (isStream) {
       try {
-        const duration = await speakParagraph(
+        const { duration } = await speakParagraph(
           articleId,
           paragraphIndex,
-          normalized
+          normalized,
+          nextText
         );
         return duration;
       } catch (err) {
@@ -245,10 +252,16 @@ export default function UtahNewsDispatch() {
 
         setActiveId(article.id);
 
+        const nextText =
+          paragraphIndex + 1 < paragraphs.length
+            ? normalizeParagraph(paragraphs[paragraphIndex + 1])
+            : null;
+
         const duration = await speakParagraphWithCache(
           article.id,
           paragraphIndex,
-          paragraphs[paragraphIndex]
+          paragraphs[paragraphIndex],
+          nextText
         );
 
         paragraphIndex++;
