@@ -51,13 +51,16 @@ function normalizeParagraph(text) {
   return (
     text
       .replace(/\s+/g, " ")
+      .replace(/\$(?=\d)/g, "")
 
       // Political prefixes
-      .replace(/\bR[-–—]\s*/g, "Republican ")
-      .replace(/\bD[-–—]\s*/g, "Democrat ")
+      .replace(/\bR[-–—]\s*/g, "Republican from ")
+      .replace(/\bD[-–—]\s*/g, "Democrat from ")
 
       // Governor forms
       .replace(/\bGov\.\s*/gi, "Governor ")
+      .replace(/\bSen\.\s*/gi, "Senator ")
+      .replace(/\bRep\.\s*/gi, "Representative ")
       .replace(/\bGov\s+/gi, "Governor ")
       .replace(/\bGov\.-elect\b/gi, "Governor-elect")
       .replace(/\bLt\. Gov\.\s*/gi, "Lieutenant Governor ")
@@ -94,7 +97,6 @@ function normalizeParagraph(text) {
 function cleanArticle(html) {
   if (!html) return [];
 
-  // PREVENT images from loading before DOM parse
   html = html
     .replace(/<img[^>]*>/gi, "")
     .replace(/<figure[\s\S]*?<\/figure>/gi, "");
@@ -102,7 +104,6 @@ function cleanArticle(html) {
   const div = document.createElement("div");
   div.innerHTML = html;
 
-  // Remove junk elements
   div
     .querySelectorAll(
       "iframe, script, style, noscript, blockquote, aside, figcaption"
@@ -111,10 +112,27 @@ function cleanArticle(html) {
 
   const paragraphs = [];
 
-  div.querySelectorAll("p").forEach((p) => {
-    const text = p.textContent.trim();
+  // Walk the DOM in order
+  div.querySelectorAll("h1, h2, h3, h4, h5, h6, p, li").forEach((el) => {
+    const text = el.textContent.trim();
     if (!text) return;
+
+    // Skip junk
     if (/^(SUPPORT|SUBSCRIBE|DONATE|READ MORE|CLICK HERE)/i.test(text)) return;
+
+    // Bullet formatting
+    if (el.tagName === "LI") {
+      paragraphs.push("• " + text);
+      return;
+    }
+
+    // Headings (you can style them however you want)
+    if (/^H[1-6]$/.test(el.tagName)) {
+      paragraphs.push(text); // or "### " + text if you want emphasis
+      return;
+    }
+
+    // Normal paragraph
     paragraphs.push(text);
   });
 
@@ -183,7 +201,12 @@ export default function UtahNewsDispatch() {
   // -----------------------------
   // Unified speak() wrapper
   // -----------------------------
-  async function speakParagraphWithCache(articleId, paragraphIndex, text, nextText) {
+  async function speakParagraphWithCache(
+    articleId,
+    paragraphIndex,
+    text,
+    nextText
+  ) {
     const normalized = normalizeParagraph(text);
     if (!normalized) return 0;
 
@@ -257,7 +280,7 @@ export default function UtahNewsDispatch() {
             ? normalizeParagraph(paragraphs[paragraphIndex + 1])
             : null;
 
-        const duration = await speakParagraphWithCache(
+        await speakParagraphWithCache(
           article.id,
           paragraphIndex,
           paragraphs[paragraphIndex],
@@ -265,7 +288,9 @@ export default function UtahNewsDispatch() {
         );
 
         paragraphIndex++;
-        setTimeout(speakParagraphLoop, duration * 1000 || 0);
+
+        // Add a clean pause between paragraphs
+        setTimeout(speakParagraphLoop, 1000);
       };
 
       speakParagraphLoop();
