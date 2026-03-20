@@ -99,6 +99,7 @@ function normalizeParagraph(text) {
 
       // Abbreviations
       .replace(/\bACLU\s+/gi, "A.C.L.U. ")
+      .replace(/\bICE\s+/gi, "ice ")
 
       .trim()
   );
