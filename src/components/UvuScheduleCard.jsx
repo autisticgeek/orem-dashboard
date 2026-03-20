@@ -56,6 +56,7 @@ export default function UvuScheduleCard() {
               hour: "numeric",
               minute: "2-digit",
             });
+         
             return {
               summary: e.summary,
               date,
@@ -106,12 +107,11 @@ export default function UvuScheduleCard() {
       month: "short",
       day: "numeric",
     });
-
     return (
       <ListItem disableGutters alignItems="flex-start">
         <ListItemText
-          primary={g.summary.slice(23, g.summary.length)}
-          secondary={`${dateStr} • ${g.location} • ${g.time}`}
+          primary={g.summary.replace("Utah Valley University ", "")}
+          secondary={`${dateStr} • ${g.location.replace(/^,\s*/, "").trim()} • ${g.time}`}
           slotProps={{
             primary: { variant: "body1" },
             secondary: { variant: "body2" },

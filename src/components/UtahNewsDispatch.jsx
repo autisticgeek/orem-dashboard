@@ -62,7 +62,7 @@ function normalizeParagraph(text) {
       .replace(/\bSen\.\s*/gi, "Senator ")
       .replace(/\bRep\.\s*/gi, "Representative ")
       .replace(/\bGov\s+/gi, "Governor ")
-      .replace(/\bGov\.-elect\b/gi, "Governor-elect")
+      .replace(/\bGov\.-elect\s*/gi, "Governor-elect ")
       .replace(/\bLt\. Gov\.\s*/gi, "Lieutenant Governor ")
       .replace(/\bLt\. Gov\s+/gi, "Lieutenant Governor ")
       .replace(/\bLt Gov\.\s*/gi, "Lieutenant Governor ")
@@ -85,6 +85,10 @@ function normalizeParagraph(text) {
       .replace(/\bOct\.\b/gi, "October")
       .replace(/\bNov\.\b/gi, "November")
       .replace(/\bDec\.\b/gi, "December")
+
+      // Abbreviations 
+      .replace(/\bACLU\s+/gi, "A.C.L.U. ")
+
 
       .trim()
   );
@@ -286,11 +290,12 @@ export default function UtahNewsDispatch() {
           paragraphs[paragraphIndex],
           nextText
         );
+     
 
         paragraphIndex++;
 
         // Add a clean pause between paragraphs
-        setTimeout(speakParagraphLoop, 1000);
+        setTimeout(speakParagraphLoop, 500);
       };
 
       speakParagraphLoop();

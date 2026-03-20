@@ -13,7 +13,7 @@ async function fetchFromPiper(text) {
   const response = await fetch("https://tts.pinyon.dev/create", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ text:text+"… …" }),
+    body: JSON.stringify({ text }),
   });
 
   if (!response.ok) {
@@ -51,7 +51,12 @@ async function prefetchParagraph(articleId, paragraphIndex, text) {
 // -----------------------------
 // Main TTS function with prefetching
 // -----------------------------
-export async function speakParagraph(articleId, paragraphIndex, text, nextText = null) {
+export async function speakParagraph(
+  articleId,
+  paragraphIndex,
+  text,
+  nextText = null
+) {
   const key = `${articleId}-${paragraphIndex}`;
   console.log(`🔎 [TTS] Request for key: ${key}`);
   console.log(`📝 [TTS] Text:`, text);
@@ -65,7 +70,9 @@ export async function speakParagraph(articleId, paragraphIndex, text, nextText =
     console.log(`❌ [CACHE MISS] Generating audio for key: ${key}`);
     blob = await fetchFromPiper(text);
 
-    console.log(`🎧 [TTS] Generated WAV blob: type=${blob.type}, size=${blob.size}`);
+    console.log(
+      `🎧 [TTS] Generated WAV blob: type=${blob.type}, size=${blob.size}`
+    );
     await storeCachedAudio(key, blob);
   }
 
@@ -90,22 +97,24 @@ export async function speakParagraph(articleId, paragraphIndex, text, nextText =
 // -----------------------------
 // Play WAV blob
 // -----------------------------
-function playBlob(blob) {
-  console.log(`🔊 [AUDIO] Playing blob: type=${blob.type}, size=${blob.size}`);
+async function playBlob(blob) {
+  const arrayBuffer = await blob.arrayBuffer();
+  const audioCtx = new AudioContext();
+  const buffer = await audioCtx.decodeAudioData(arrayBuffer);
+
+  const source = audioCtx.createBufferSource();
+  source.buffer = buffer;
+  source.connect(audioCtx.destination);
+
+  const duration = buffer.duration;
+  const tStart = audioCtx.currentTime;
+
+  source.start();
 
   return new Promise((resolve) => {
-    const audio = new Audio();
-    audio.src = URL.createObjectURL(blob);
-
-    audio.onloadedmetadata = () => {
-      const duration = audio.duration;
-      console.log(`⏱️ [AUDIO] Duration: ${duration}s`);
-      audio.play();
-
-      audio.onended = () => {
-        console.log(`🏁 [AUDIO] Finished playback`);
-        resolve(duration);
-      };
+    source.onended = () => {
+      const actual = audioCtx.currentTime - tStart;
+      resolve({ duration, actual, drift: duration - actual });
     };
   });
 }
