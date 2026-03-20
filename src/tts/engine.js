@@ -13,7 +13,7 @@ async function fetchFromPiper(text) {
   const response = await fetch("https://tts.pinyon.dev/create", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ text }),
+    body: JSON.stringify({ text:text+"… …" }),
   });
 
   if (!response.ok) {
