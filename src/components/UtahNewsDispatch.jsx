@@ -51,7 +51,18 @@ function normalizeParagraph(text) {
   return (
     text
       .replace(/\s+/g, " ")
-      .replace(/\$(?=\d)/g, "")
+
+      // 1. "$25 million" → "25 million dollars"
+      .replace(
+        /\$(\d+(?:\.\d+)?)\s+(million|billion|trillion|thousand|hundred)\b/gi,
+        "$1 $2 dollars"
+      )
+
+      // 2. "$1" → "1 dollar" (singular/plural aware)
+      .replace(
+        /\$(\d+(?:\.\d+)?)(?!\s+(million|billion|trillion|thousand|hundred))/gi,
+        (m, num) => `${num} ${Number(num) === 1 ? "dollar" : "dollars"}`
+      )
 
       // Political prefixes
       .replace(/\bR[-–—]\s*/g, "Republican from ")
@@ -86,9 +97,8 @@ function normalizeParagraph(text) {
       .replace(/\bNov\.\b/gi, "November")
       .replace(/\bDec\.\b/gi, "December")
 
-      // Abbreviations 
+      // Abbreviations
       .replace(/\bACLU\s+/gi, "A.C.L.U. ")
-
 
       .trim()
   );
@@ -290,7 +300,6 @@ export default function UtahNewsDispatch() {
           paragraphs[paragraphIndex],
           nextText
         );
-     
 
         paragraphIndex++;
 
