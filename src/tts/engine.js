@@ -1,5 +1,6 @@
 // src/tts/engine.js
 import { getCachedAudio, storeCachedAudio } from "./cache.js";
+const isDev = import.meta.env.DEV;
 
 // -----------------------------
 // Prefetch buffer
@@ -28,21 +29,21 @@ async function fetchFromPiper(text) {
 // -----------------------------
 async function prefetchParagraph(articleId, paragraphIndex, text) {
   const key = `${articleId}-${paragraphIndex}`;
-  console.log(`🟦 [PREFETCH] Attempting prefetch for key: ${key}`);
+  isDev && console.log(`🟦 [PREFETCH] Attempting prefetch for key: ${key}`);
 
   // 1. Try cache
   const cached = await getCachedAudio(key);
   if (cached) {
-    console.log(`🟩 [PREFETCH HIT] Cached audio ready for key: ${key}`);
+    isDev && console.log(`🟩 [PREFETCH HIT] Cached audio ready for key: ${key}`);
     nextAudioBlob = cached;
     return;
   }
 
   // 2. Generate via Piper
-  console.log(`🟧 [PREFETCH MISS] Generating audio for key: ${key}`);
+  isDev && console.log(`🟧 [PREFETCH MISS] Generating audio for key: ${key}`);
   const wav = await fetchFromPiper(text);
 
-  console.log(`🟧 [PREFETCH GENERATED] Blob size: ${wav.size}`);
+  isDev && console.log(`🟧 [PREFETCH GENERATED] Blob size: ${wav.size}`);
   await storeCachedAudio(key, wav);
 
   nextAudioBlob = wav;
@@ -58,19 +59,19 @@ export async function speakParagraph(
   nextText = null
 ) {
   const key = `${articleId}-${paragraphIndex}`;
-  console.log(`🔎 [TTS] Request for key: ${key}`);
-  console.log(`📝 [TTS] Text:`, text);
+  isDev && console.log(`🔎 [TTS] Request for key: ${key}`);
+  isDev && console.log(`📝 [TTS] Text:`, text);
 
   // 1. Load current paragraph
   let blob = await getCachedAudio(key);
 
   if (blob) {
-    console.log(`✅ [CACHE HIT] Found audio for key: ${key}`);
+    isDev && console.log(`✅ [CACHE HIT] Found audio for key: ${key}`);
   } else {
-    console.log(`❌ [CACHE MISS] Generating audio for key: ${key}`);
+    isDev && console.log(`❌ [CACHE MISS] Generating audio for key: ${key}`);
     blob = await fetchFromPiper(text);
 
-    console.log(
+    isDev && console.log(
       `🎧 [TTS] Generated WAV blob: type=${blob.type}, size=${blob.size}`
     );
     await storeCachedAudio(key, blob);
