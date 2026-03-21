@@ -43,69 +43,6 @@ function toLocalDate(pubDate) {
 }
 
 // -----------------------------
-// Text Normalization
-// -----------------------------
-function normalizeParagraph(text) {
-  if (typeof text !== "string") return "";
-
-  return (
-    text
-      .replace(/\s+/g, " ")
-
-      // 1. "$25 million" → "25 million dollars"
-      .replace(
-        /\$(\d+(?:\.\d+)?)\s+(million|billion|trillion|thousand|hundred)\b/gi,
-        "$1 $2 dollars"
-      )
-
-      // 2. "$1" → "1 dollar" (singular/plural aware)
-      .replace(
-        /\$(\d+(?:\.\d+)?)(?!\s+(million|billion|trillion|thousand|hundred))/gi,
-        (m, num) => `${num} ${Number(num) === 1 ? "dollar" : "dollars"}`
-      )
-
-      // Political prefixes
-      .replace(/\bR[-–—]\s*/g, "Republican from ")
-      .replace(/\bD[-–—]\s*/g, "Democrat from ")
-
-      // Governor forms
-      .replace(/\bGov\.\s*/gi, "Governor ")
-      .replace(/\bSen\.\s*/gi, "Senator ")
-      .replace(/\bRep\.\s*/gi, "Representative ")
-      .replace(/\bGov\s+/gi, "Governor ")
-      .replace(/\bGov\.-elect\s*/gi, "Governor-elect ")
-      .replace(/\bLt\. Gov\.\s*/gi, "Lieutenant Governor ")
-      .replace(/\bLt\. Gov\s+/gi, "Lieutenant Governor ")
-      .replace(/\bLt Gov\.\s*/gi, "Lieutenant Governor ")
-      .replace(/\bLt Gov\s+/gi, "Lieutenant Governor ")
-
-      // Places
-      .replace(/\bSt\. George\b/gi, "Saint George")
-      .replace(/\bU\.S\.(?=\W|$)/gi, "U.S.")
-
-      // Months
-      .replace(/\bJan\.\b/gi, "January")
-      .replace(/\bFeb\.\b/gi, "February")
-      .replace(/\bMar\.\b/gi, "March")
-      .replace(/\bApr\.\b/gi, "April")
-      .replace(/\bJun\.\b/gi, "June")
-      .replace(/\bJul\.\b/gi, "July")
-      .replace(/\bAug\.\b/gi, "August")
-      .replace(/\bSep\.\b/gi, "September")
-      .replace(/\bSept\.\b/gi, "September")
-      .replace(/\bOct\.\b/gi, "October")
-      .replace(/\bNov\.\b/gi, "November")
-      .replace(/\bDec\.\b/gi, "December")
-
-      // Abbreviations
-      .replace(/\bACLU\s+/gi, "A.C.L.U. ")
-      .replace(/\bICE\s+/gi, "ice ")
-
-      .trim()
-  );
-}
-
-// -----------------------------
 // HTML → Paragraph Extraction
 // (Safe for COEP / CSP)
 // -----------------------------
@@ -222,15 +159,12 @@ export default function UtahNewsDispatch() {
     text,
     nextText
   ) {
-    const normalized = normalizeParagraph(text);
-    if (!normalized) return 0;
-
     if (isStream) {
       try {
         const { duration } = await speakParagraph(
           articleId,
           paragraphIndex,
-          normalized,
+          text,
           nextText
         );
         return duration;
@@ -239,7 +173,7 @@ export default function UtahNewsDispatch() {
       }
     }
 
-    return speakFallback(normalized);
+    return speakFallback(text);
   }
 
   // -----------------------------
@@ -292,7 +226,7 @@ export default function UtahNewsDispatch() {
 
         const nextText =
           paragraphIndex + 1 < paragraphs.length
-            ? normalizeParagraph(paragraphs[paragraphIndex + 1])
+            ? paragraphs[paragraphIndex + 1]
             : null;
 
         await speakParagraphWithCache(

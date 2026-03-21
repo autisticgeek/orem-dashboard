@@ -60,7 +60,7 @@ export async function speakParagraph(
 ) {
   const key = `${articleId}-${paragraphIndex}`;
   isDev && console.log(`🔎 [TTS] Request for key: ${key}`);
-  isDev && console.log(`📝 [TTS] Text:`, text);
+  console.log(`📝 [TTS] Text:`, text);
 
   // 1. Load current paragraph
   let blob = await getCachedAudio(key);
